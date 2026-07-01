@@ -63,4 +63,23 @@ describe("frontend app", () => {
     expect(calls[0][1]?.headers).toMatchObject({ authorization: "Bearer secret" });
     expect(document.querySelector("#markdown-output")?.textContent).toBe("# refreshed");
   });
+
+  it("shows API error details when generation fails", async () => {
+    globalThis.fetch = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          error: "missing_admin_token",
+          message: "ADMIN_TOKEN must be configured before updates are allowed."
+        }),
+        { status: 500, headers: { "content-type": "application/json" } }
+      )
+    ) as never;
+
+    const { initializeApp } = await import("../src/app/main");
+    initializeApp();
+    document.querySelector<HTMLButtonElement>("#refresh-button")?.click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(document.querySelector("#status")?.textContent).toContain("ADMIN_TOKEN must be configured");
+  });
 });
