@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>每日国际新闻双语简报</title>
+    <link rel="stylesheet" href="./src/app/styles.css" />
+    <style>
+      body {
+        margin: 0;
+        background: #f6f7f4;
+        color: #16201f;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .shell {
+        width: min(1180px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0;
+      }
+
+      .topbar {
+        display: grid;
+        gap: 18px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #d7ded8;
+      }
+
+      .controls,
+      .actions,
+      .secondary-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      button,
+      input {
+        min-height: 40px;
+        font: inherit;
+      }
+
+      .markdown-output {
+        min-height: 42vh;
+        margin-top: 14px;
+        border: 1px solid #d7ded8;
+        border-radius: 8px;
+        padding: 18px;
+        overflow: auto;
+        background: #ffffff;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <h1>每日国际新闻双语简报</h1>
+          <p>Daily International Bilingual News Briefing</p>
+        </div>
+        <div class="controls">
+          <label>
+            日期
+            <input id="briefing-date" type="date" />
+          </label>
+          <label>
+            更新口令
+            <input id="admin-token" type="password" autocomplete="current-password" />
+          </label>
+          <button id="load-button" type="button">加载</button>
+          <button id="refresh-button" type="button">更新今日简报</button>
+        </div>
+      </header>
+      <section class="actions">
+        <p id="status">本地文件预览：可查看界面，生成简报需要部署后使用。</p>
+        <div class="secondary-actions">
+          <button id="copy-button" type="button">复制 Markdown</button>
+          <button id="download-button" type="button">下载 .md</button>
+        </div>
+      </section>
+      <pre id="markdown-output" class="markdown-output"># 本地预览 / Local Preview
+
+这个页面现在是直接从本地文件打开的预览版，因此不会生成真实新闻。
+
+生成新闻简报需要部署到 Cloudflare Pages，并配置：
+- BRIEFINGS_KV
+- OPENAI_API_KEY
+- ADMIN_TOKEN
+
+部署完成后，用手机或电脑打开固定网站链接，输入更新口令，再点击“更新今日简报”。</pre>
+    </main>
+    <script type="module" src="./src/app/main.ts"></script>
+  </body>
+</html>
