@@ -198,6 +198,46 @@ describe("briefing API", () => {
     vi.unstubAllGlobals();
   });
 
+  it("returns sanitized OpenAI error details when generation fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        new Response(
+          JSON.stringify({
+            error: {
+              message: "Incorrect API key provided",
+              type: "invalid_request_error"
+            }
+          }),
+          { status: 401, headers: { "content-type": "application/json" } }
+        )
+      )
+    );
+
+    const response = await onRequestGet(
+      createContext(
+        "https://example.com/api/briefing?date=2026-06-29&force=true",
+        {
+          BRIEFINGS_KV: new MemoryKV(),
+          OPENAI_API_KEY: "bad-key",
+          ADMIN_TOKEN: "secret"
+        },
+        {
+          headers: {
+            authorization: "Bearer secret"
+          }
+        }
+      ) as never
+    );
+    const body = (await response.json()) as { message: string };
+
+    expect(response.status).toBe(502);
+    expect(body.message).toContain("OpenAI request failed with status 401");
+    expect(body.message).toContain("Incorrect API key provided");
+
+    vi.unstubAllGlobals();
+  });
+
   it("rejects invalid dates", async () => {
     const response = await onRequestGet(
       createContext("https://example.com/api/briefing?date=2026-02-31", {
