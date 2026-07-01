@@ -1,3 +1,7 @@
 name = "daily-news-briefing-site"
 compatibility_date = "2026-06-29"
 pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "BRIEFINGS_KV"
+id = "19d5adf232cd4db5b9342164c58638c5"
