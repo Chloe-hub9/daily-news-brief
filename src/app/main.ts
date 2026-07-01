@@ -43,7 +43,7 @@ async function requestBriefing(force: boolean): Promise<void> {
     const body = (await response.json()) as BriefingResponse | BriefingErrorResponse;
 
     if (!response.ok || "error" in body) {
-      status.textContent = "生成失败，请稍后重试。";
+      status.textContent = "error" in body ? `生成失败：${body.message} (${body.error})` : "生成失败，请稍后重试。";
       return;
     }
 
