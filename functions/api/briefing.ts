@@ -23,6 +23,17 @@ interface OpenAIResponse {
   }>;
 }
 
+class GenerationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GenerationError";
+  }
+}
+
+function truncateForClient(value: string): string {
+  return value.replace(/\s+/g, " ").trim().slice(0, 500);
+}
+
 function jsonResponse(body: BriefingResponse | BriefingErrorResponse, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -77,13 +88,14 @@ async function generateBriefing(date: string, env: Env): Promise<string> {
   });
 
   if (!response.ok) {
-    throw new Error(`Generation failed with status ${response.status}`);
+    const detail = truncateForClient(await response.text());
+    throw new GenerationError(`OpenAI request failed with status ${response.status}: ${detail}`);
   }
 
   const data = (await response.json()) as OpenAIResponse;
   const text = extractOutputText(data);
   if (!text) {
-    throw new Error("Generation response did not include output_text");
+    throw new GenerationError("OpenAI response did not include output text.");
   }
 
   return text;
@@ -137,15 +149,19 @@ export async function onRequestGet(context: PagesContextWithEnv): Promise<Respon
     };
     await context.env.BRIEFINGS_KV.put(key, JSON.stringify(body));
     return jsonResponse(body);
-  } catch {
+  } catch (error) {
     if (cached) {
       const body = JSON.parse(cached) as BriefingResponse;
       return jsonResponse({ ...body, cached: true });
     }
+    const message =
+      error instanceof GenerationError
+        ? error.message
+        : "Generation failed and no cached briefing is available for this date.";
     return jsonResponse(
       {
         error: "generation_failed",
-        message: "Generation failed and no cached briefing is available for this date."
+        message
       },
       502
     );
